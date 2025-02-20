@@ -27,11 +27,11 @@ from hiba import hiba
 def program_modositasa(path:str):
     adat=read_dir(path)
     program=input("Adja meg melyik programon szeretne változtatni:")
-    modositanivalo=int(input("Kérjük adja meg mit szeretne módosítani: 1:Program erőforrás igénye, 2:Porgram futtatandó plédányainak számának módsítása "))
-    if(not(modositanivalo==1 or modositanivalo==2)):
+    modositando=int(input("Kérjük adja meg mit szeretne módosítani: 1:Program erőforrás igénye, 2:Program futtatandó példányszámainak módsítása "))
+    if(not(modositando==1 or modositando==2)):
         hiba("Hibás választás")
     else:
-        if(modositanivalo==1):
+        if(modositando==1):
             magok=int(input("Szükséges magok száma: "))
             memoria=int(input("Szükséges memória száma:"))
             for dolog in adat['FOLYAMATOK'][program]:
