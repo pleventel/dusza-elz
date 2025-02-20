@@ -32,11 +32,13 @@ import time
 
 def uj_program_futtatasa(path: str):
     adat=read_dir(path)
-    gepen=input("Adja meg, hogy melyik számítógépenszeretné futtatni:")
+    print("Új programpéldány futtatása")
+    gepen=input("Adja meg, hogy melyik számítógépen szeretné futtatni:")
     program=input("Adja meg, hogy melyik programot szeretné elindítani:")
     hasznalt_mag,hasznalt_memoria=kihasznaltsag(path,gepen)
-    if(adat['SZAMITOGEPEK'][gepen]['MAGSZAM']<hasznalt_mag+adat['FOLYAMATOK'][program][0]['MAGSZAM'] or adat['SZAMITOGEPEK'][gepen]['MEMORIASZAM']<hasznalt_memoria+adat['FOLYAMATOK'][program][0]['MEMORIASZAM']):
-        hiba("Kevés Mag vagy Memória")
+    if(adat['SZAMITOGEPEK'][gepen]['MAGSZAM']<hasznalt_mag+adat['FOLYAMATOK'][program][0]['MAGSZAM'] \
+        or adat['SZAMITOGEPEK'][gepen]['MEMORIASZAM']<hasznalt_memoria+adat['FOLYAMATOK'][program][0]['MEMORIASZAM']):
+        hiba("Kevés mag vagy memória")
     else:
         azonosito=""
         lehetseges=string.ascii_lowercase
@@ -47,3 +49,4 @@ def uj_program_futtatasa(path: str):
         memoria=adat['FOLYAMATOK'][program][0]['MEMORIASZAM']
         adat['FOLYAMATOK'][program].append({'SZAMITOGEP':gepen,'KOD':azonosito,'INDITAS':ido,'AKTIV':True,'MAGSZAM':mag,'MEMORIASZAM':memoria})
         write_dir(path,adat)
+        print("A programpéldány futtatása megkezdődött.")
