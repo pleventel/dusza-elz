@@ -1,4 +1,4 @@
-from http.client import ImproperConnectionState
+from http.client import ImproperConnectionState #szerintem ezt ki lehetne venni
 
 
 from read_dir import read_dir,write_dir
@@ -23,7 +23,7 @@ def szamitogep_hozzaadasa(path: str):
     memoria=input("Memória mennyisége:")
     
     if(helyesnev(nev)==1):
-        hiba("hibasnev")
+        hiba("Hibás név!")
     else:
         adat['SZAMITOGEPEK'].append([{'név':nev}])
         adat['SZAMITOGEPEK'][nev].append({
