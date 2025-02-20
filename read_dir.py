@@ -28,14 +28,20 @@ from hiba import warning
 import datetime
 
 def read_dir(path):
-    path_separator = ""
+    
+    # adding path separator to end if there is none
     if not path[:-1] == "\\" and not path[:-1] == "/":
         if len(path) > len(path.replace("/", "")): # hacky ahh solution
             path = path + "/"
-            path_separator = "/"
         else: 
             path = path + "\\"
-            path_separator = "\\"
+    
+    # deciding if the path separator is / or \
+    path_separator = ""
+    if len(path) > len(path.replace("/", "")): # hacky ahh solution
+        path_separator = "/"
+    else: 
+        path_separator = "\\"
     
     home = listdir(path)
     
@@ -103,14 +109,20 @@ def read_dir(path):
 
 
 def get_cluster(path):
-    path_separator = ""
+    
+    # adding path separator to end if there is none
     if not path[:-1] == "\\" and not path[:-1] == "/":
         if len(path) > len(path.replace("/", "")): # hacky ahh solution
             path = path + "/"
-            path_separator = "/"
         else: 
             path = path + "\\"
-            path_separator = "\\"
+    
+    # deciding if the path separator is / or \
+    path_separator = ""
+    if len(path) > len(path.replace("/", "")): # hacky ahh solution
+        path_separator = "/"
+    else: 
+        path_separator = "\\"
     
     home = listdir(path)
     
@@ -179,14 +191,20 @@ def get_cluster(path):
     
 
 def write_dir(path, adatok):
-    path_separator = ""
+
+    # adding path separator to end if there is none
     if not path[:-1] == "\\" and not path[:-1] == "/":
         if len(path) > len(path.replace("/", "")): # hacky ahh solution
             path = path + "/"
-            path_separator = "/"
         else: 
             path = path + "\\"
-            path_separator = "\\"
+    
+    # deciding if the path separator is / or \
+    path_separator = ""
+    if len(path) > len(path.replace("/", "")): # hacky ahh solution
+        path_separator = "/"
+    else: 
+        path_separator = "\\"
 
     home = listdir(path)
 
