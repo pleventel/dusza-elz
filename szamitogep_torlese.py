@@ -1,4 +1,3 @@
-from asyncore import write
 from math import fabs
 from operator import index
 from read_dir import read_dir, write_dir
