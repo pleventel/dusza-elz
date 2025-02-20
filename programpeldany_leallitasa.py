@@ -1,4 +1,5 @@
 from read_dir import read_dir
+from hiba import hiba
 import os
 """
 !!!
@@ -34,6 +35,6 @@ def programpeldany_leallitasa(path: str,):
     print("Válassza ki a leállítani kívánt folyamatot!")
     kod = input("Adja meg a leállítani kívánt folyamat azonosítóját!\t")
     if kod not in (lehetsegesek):
-        print("Sajnos ez egy hibásan megadott azonosító.")
+        hiba("Sajnos ez egy hibásan megadott azonosító.")
     os.remove(str(str(path), "\\", adat['FOLYAMATOK']['név'], "-", [kod]))
     print("A megadott azonosítójú programpéldány leállítása megtörtént.")
