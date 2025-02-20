@@ -28,8 +28,14 @@ from hiba import warning
 import datetime
 
 def read_dir(path):
-    if not path[:-1] == "\\":
-        path = path + "\\"
+    path_separator = ""
+    if not path[:-1] == "\\" and not path[:-1] == "/":
+        if len(path) > len(path.replace("/", "")): # hacky ahh solution
+            path = path + "/"
+            path_separator = "/"
+        else: 
+            path = path + "\\"
+            path_separator = "\\"
     
     home = listdir(path)
     
@@ -64,7 +70,7 @@ def read_dir(path):
                 error(f"NINCS KONFIG FILE A {szamitogep} MAPPÁBAN")
                 return -1
 
-        with open(f"{path}{szamitogep}\\{konfig}", "r", encoding='utf-8') as szamitogepfile:
+        with open(f"{path}{szamitogep}{path_separator}{konfig}", "r", encoding='utf-8') as szamitogepfile:
             lines = szamitogepfile.readlines()
             lines = [x.rstrip() for x in lines]
             adatok["SZAMITOGEPEK"][szamitogep] = {
@@ -77,7 +83,7 @@ def read_dir(path):
             for folyamat in folyamatok:
                 nev = folyamat.split("-")[0]
                 kod = folyamat.split("-")[1]
-                with open(f"{path}{szamitogep}\\{folyamat}", "r", encoding='utf-8') as folyamatfile:
+                with open(f"{path}{szamitogep}{path_separator}{folyamat}", "r", encoding='utf-8') as folyamatfile:
                     lines = folyamatfile.readlines()
                     lines = [x.rstrip() for x in lines]
                     if not nev in adatok["FOLYAMATOK"].keys():
@@ -97,8 +103,14 @@ def read_dir(path):
 
 
 def get_cluster(path):
-    if not path[:-1] == "\\":
-        path = path + "\\"
+    path_separator = ""
+    if not path[:-1] == "\\" and not path[:-1] == "/":
+        if len(path) > len(path.replace("/", "")): # hacky ahh solution
+            path = path + "/"
+            path_separator = "/"
+        else: 
+            path = path + "\\"
+            path_separator = "\\"
     
     home = listdir(path)
     
@@ -133,7 +145,7 @@ def get_cluster(path):
                 error(f"NINCS KONFIG FILE A {szamitogep} MAPPÁBAN")
                 return -1
 
-        with open(f"{path}{szamitogep}\\{konfig}", "r", encoding='utf-8') as szamitogepfile:
+        with open(f"{path}{szamitogep}{path_separator}{konfig}", "r", encoding='utf-8') as szamitogepfile:
             lines = szamitogepfile.readlines()
             lines = [x.rstrip() for x in lines]
             adatok["SZAMITOGEPEK"][szamitogep] = {
@@ -146,7 +158,7 @@ def get_cluster(path):
             for folyamat in folyamatok:
                 nev = folyamat.split("-")[0]
                 kod = folyamat.split("-")[1]
-                with open(f"{path}{szamitogep}\\{folyamat}", "r", encoding='utf-8') as folyamatfile:
+                with open(f"{path}{szamitogep}{path_separator}{folyamat}", "r", encoding='utf-8') as folyamatfile:
                     lines = folyamatfile.readlines()
                     lines = [x.rstrip() for x in lines]
                     if not nev in adatok["FOLYAMATOK"].keys():
@@ -167,8 +179,14 @@ def get_cluster(path):
     
 
 def write_dir(path, adatok):
-    if not path[:-1] == "\\":
-        path = path + "\\"
+    path_separator = ""
+    if not path[:-1] == "\\" and not path[:-1] == "/":
+        if len(path) > len(path.replace("/", "")): # hacky ahh solution
+            path = path + "/"
+            path_separator = "/"
+        else: 
+            path = path + "\\"
+            path_separator = "\\"
 
     home = listdir(path)
 
@@ -182,8 +200,8 @@ def write_dir(path, adatok):
     for szamitogep in home:
         files = listdir(f"{path}{szamitogep}")
         for file in files:
-            remove(f"{path}{szamitogep}\\{file}")
-        rmdir(f"{path}{szamitogep}\\")
+            remove(f"{path}{szamitogep}{path_separator}{file}")
+        rmdir(f"{path}{szamitogep}{path_separator}")
 
     # <>< ----------------- ><>
 
@@ -201,18 +219,21 @@ def write_dir(path, adatok):
 
     for szamitogep in adatok['SZAMITOGEPEK'].keys():
         makedirs(f"{path}{szamitogep}")
-        with open(f"{path}{szamitogep}\\.szamitogep_konfig", "w", encoding="utf-8") as f:
+        with open(f"{path}{szamitogep}{path_separator}.szamitogep_konfig", "w", encoding="utf-8") as f:
             f.write(f"{adatok['SZAMITOGEPEK'][szamitogep]['MAGSZAM']}\n{adatok['SZAMITOGEPEK'][szamitogep]['MEMORIASZAM']}")
     
     for folyamatnev in adatok['FOLYAMATOK'].keys():
         for folyamat in adatok['FOLYAMATOK'][folyamatnev]:
-            filepath = f"{path}{folyamat['SZAMITOGEP']}\{folyamatnev}-{folyamat['KOD']}" 
+            filepath = f"{path}{folyamat['SZAMITOGEP']}{path_separator}{folyamatnev}-{folyamat['KOD']}" 
             with open(filepath, "w", encoding="utf-8") as f:
                 f.write(
                     f"{folyamat['INDITAS']}\n{'AKTÍV' if folyamat['AKTIV'] else 'INAKTÍV'}\n{folyamat['MAGSZAM']}\n{folyamat['MEMORIASZAM']}"
                 )
     return 0
-# if __name__ == "__main__":
-#     adatok = read_dir(r"U:\minta_bemenet\cluster0")
+
+
+if __name__ == "__main__":
+     adatok = read_dir(r"/home/edi/dev/competitions/dusza-elz/minta_bemenet/cluster0")
+     print(adatok)
 #     pass
 #     write_dir(r"C:\Users\d2\Desktop\dir\cluster1", adatok)
