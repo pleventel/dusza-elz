@@ -8,5 +8,6 @@
 
 ## Újonnan létrehozott funkciók
 - Grafikus környezet készítése
+    - Saját logó *(ChatGPT 0. verzió feltöltve)*.
 
 git test 1
