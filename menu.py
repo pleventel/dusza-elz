@@ -28,6 +28,7 @@ def fomenu():
         print(f"\t{klaszter['MAGSZAM']} milimag;")
         print(f"\t{klaszter['MEMORIASZAM']} MB.")
     
+    # Felhasznált és rendelkezésre álló energiaforrások számítása
     magsum = sum(int(x['MAGSZAM']) for x in adatok)
     memsum = sum(int(x['MEMORIASZAM']) for x in adatok)
     maxmag = 0
@@ -35,11 +36,11 @@ def fomenu():
     for gep in realadatok['SZAMITOGEPEK'].keys():
         maxmag += int(realadatok['SZAMITOGEPEK'][gep]['MAGSZAM'])
         maxmem += int(realadatok['SZAMITOGEPEK'][gep]['MEMORIASZAM'])
-    # ez hibas megoldas de mind1
     if magsum > maxmag:
         hiba("TÖBB A MAGSZÁM A MEGENGEDETTNÉL!")
     if memsum > maxmem:
         hiba("TÖBB A MEMÓRIA A MEGENGEDETTNÉL!")
+    
     print("Főmenü")
     print("Válasszon az alábbi menüpontok közül!")
     print("1. Monitoring")
