@@ -1,10 +1,10 @@
 # További teendők a projekt beadásáig
 
 ## Korábbi munka javítása és ellenőrzése
-- Monitoring funkció létrehozása;
+- Monitoring funkció létrehozása - **KÉSZ**.
 - Kihasználtság: fájlba írás pótlása;
-- Számítógép törlése: hiányos implementálás *(nem találtam meg, hogy mi a gond)*
-- Program leállítása: csak részlegesen van kész.
+- Számítógép törlése: hiányos implementálás *(nem találtam meg, hogy mi a gond)* - **KÉSZ**.
+- Program leállítása: csak részlegesen van kész - **KÉSZ**.
 
 ## Újonnan létrehozott funkciók
 - Grafikus környezet készítése
