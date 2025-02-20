@@ -31,6 +31,7 @@ def program_leallitasa(path:str):
         if(folyamatok==folyamat):
             valtozas=True
             del(adat['FOLYAMATOK'][folyamatok])
+            print(f"A '{adat}' folyamatot sikeresen leállította.")
             break
     if(valtozas==False):
         hiba("Nincs ilyen folyamat")
