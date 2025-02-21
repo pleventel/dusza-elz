@@ -232,7 +232,7 @@ def konkretprogram():
     program = input("Adja meg a kiválasztott program nevét!\t")
     folyamatok = []
     for folyamat in adatok['FOLYAMATOK'][program]:
-        folyamatok.append(folyamat['KOD', 'SZAMITOGEP', 'MAGSZAM', 'MEMORIASZAM'])
+        folyamatok.append([folyamat['KOD'], folyamat['SZAMITOGEP'], folyamat['MAGSZAM'], folyamat['MEMORIASZAM']])
     print(f"A kiválasztott '{program}' információi:")
     for folyamat in folyamatok:
         print(f"Azonosító: {folyamat[0]}, Számítógép az.: {folyamat[1]}, Processzor igény: {folyamat[2]/1000} processzormag, Memória igény: {folyamat[3]} MB.")
