@@ -1,9 +1,9 @@
 **Dusza ELZ - Dokumentáció**
 
 # 1. Bevezetés
-A Dusza ELZ egy klasztermenedzsment rendszer, amely lehetővé teszi a felhasználók számára a klaszteren futó folyamatok figyelését, módosítását, új programok indítását, valamint a számítógépek erőforrásainak nyomon követését. A rendszer a fájlrendszerben tárolja a klaszter állapotát, és az adatok kezelésére egyszerű szöveges fájlokat használ. A programhoz tartozó grafikus felületet a PySide6-on keresztül érhetjük el.
+A Dusza ELZ projekt egy klasztermenedzsment rendszer, amely lehetővé teszi a felhasználók számára a klaszteren futó folyamatok figyelését, módosítását, új programok indítását, valamint a számítógépek erőforrásainak nyomon követését. A rendszer a fájlrendszerben tárolja a klaszter állapotát, és az adatok kezelésére egyszerű szöveges fájlokat használ. A programhoz tartozó grafikus felületet a PySide6-on keresztül érhetjük el.
 
-A projekt célja a korábban elkészített program prodoktifikálása.
+A projekt céljai: részvétel a Dusza Árpád Országos Programozói Emlékversenyen, a korábban elkészített program prodoktifikálásával.
 
 # 2. Telepítési útmutató
 ### 2.1. Rendszerkövetelmények
@@ -13,6 +13,12 @@ A projekt célja a korábban elkészített program prodoktifikálása.
 - Javasolt futtatási környezet: Visual Studio Code
 
 ### 2.2. Telepítés lépései
+Mivel a projekt futtatható konzolból és grafikus felületen keresztül egyaránt, ezért a telepítése is kétféleképpen zajlik.
+
+A grafikus felület folyamatban lévő fejleszése miatt javasoljuk a konzolos verzió használatát.
+
+#### 2.2.1. Konzolos használat
+Nyissa meg a Terminált, majd kövesse a lentebb leírt lépéseket.
 1. Projekt klónozása a GitHubról:
    ```bash
    git clone https://github.com/pleventel/dusza-elz.git
@@ -21,17 +27,30 @@ A projekt célja a korábban elkészített program prodoktifikálása.
    ```bash
    cd dusza-elz
    ```
-
+3. Program futtatása:
+   
+   python menu.py
+   
+   Vagy: F5 gomb megnyomásával a Pythont futtatni képes környezetben (pl. Microsoft Visual Studio Code, Microsoft Visual Studio, Python IDLE).
+Ezen lépéssel befejeződött a program telepítése. A használat módjáról az dokumentáció 3. pontjában olvashat.
+#### 2.2.2. Grafikus programkörnyezet használata
+Nyissa meg a Terminált, majd kövesse a lentebb leírt lépéseket.
+1. Projekt klónozása a GitHubról - mindkét felhasználási mód esetén:
+   ```bash
+   git clone https://github.com/pleventel/dusza-elz.git
+   ```
+2. Belépés a projekt mappába - mindkét felhasználási mód esetén:
+   ```bash
+   cd dusza-elz
+   ```
 3. PySide6 telepítése a grafikus felület kezeléséhez.
     ```
     py -m pip install PySide6
     ```
-
 4. Program futtatása
    ```bash
    python menu.py
    ```
-
    Vagy: `F5` gomb megnyomásával a Pythont futtatni képes környezetben *(pl. Microsoft Visual Studio Code, Microsoft Visual Studio, Python IDLE)*.
 
 # 3. Használati útmutató
