@@ -8,6 +8,8 @@ from collections import defaultdict
 
 from read_dir import read_dir, write_dir
 
+from datetime import datetime
+
 class EditComputerDialog(QDialog):
     def __init__(self, parent, old_name, current_data):
         super().__init__(parent)
@@ -302,11 +304,6 @@ class AddProcessDialog(QDialog):
         layout.addWidget(QLabel("Kód (unique identifier):"))
         layout.addWidget(self.kod_edit)
         
-        self.inditas_spin = QSpinBox()
-        self.inditas_spin.setRange(0, 999999)
-        layout.addWidget(QLabel("Indítás:"))
-        layout.addWidget(self.inditas_spin)
-        
         self.magszam_spin = QSpinBox()
         self.magszam_spin.setRange(1, 1000000000)
         self.magszam_spin.setValue(1)
@@ -347,7 +344,13 @@ class AddProcessDialog(QDialog):
         if not kod:
             QMessageBox.warning(self, "Error", "Kód cannot be empty!")
             return
-            
+        
+        # Get current date/time
+        current_datetime = datetime.now()
+
+        # Format date
+        self.inditas = current_datetime.strftime(r"%Y-%m-%d %H:%M:%S")
+
         # Check for duplicate Kód in the group
         if group_name in self.current_data['FOLYAMATOK']:
             existing_kods = {p['KOD'] for p in self.current_data['FOLYAMATOK'][group_name]}
@@ -358,7 +361,7 @@ class AddProcessDialog(QDialog):
         new_process = {
             'SZAMITOGEP': self.computer_combo.currentText(),
             'KOD': kod,
-            'INDITAS': self.inditas_spin.value(),
+            'INDITAS': self.inditas,
             'MAGSZAM': self.magszam_spin.value(),
             'MEMORIASZAM': self.memoriaszam_spin.value(),
             'AKTIV': self.aktiv_check.isChecked()
