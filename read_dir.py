@@ -22,26 +22,17 @@
 
 """
 
-from os import remove, makedirs, listdir, rmdir, system
+from os import remove, makedirs, listdir, rmdir, system, sep as path_separator
+from os.path import exists, join, isdir, isfile
+import shutil
 from hiba import hiba as error
 from hiba import warning
 import datetime
 
 def read_dir(path):
     
-    # adding path separator to end if there is none
-    if not path[:-1] == "\\" and not path[:-1] == "/":
-        if len(path) > len(path.replace("/", "")): # hacky ahh solution
-            path = path + "/"
-        else: 
-            path = path + "\\"
-    
-    # deciding if the path separator is / or \
-    path_separator = ""
-    if len(path) > len(path.replace("/", "")): # hacky ahh solution
-        path_separator = "/"
-    else: 
-        path_separator = "\\"
+    # Normalize path
+    path = path.rstrip(path_separator) + path_separator
     
     home = listdir(path)
     
@@ -110,19 +101,9 @@ def read_dir(path):
 
 def get_cluster(path):
     
-    # adding path separator to end if there is none
-    if not path[:-1] == "\\" and not path[:-1] == "/":
-        if len(path) > len(path.replace("/", "")): # hacky ahh solution
-            path = path + "/"
-        else: 
-            path = path + "\\"
-    
-    # deciding if the path separator is / or \
-    path_separator = ""
-    if len(path) > len(path.replace("/", "")): # hacky ahh solution
-        path_separator = "/"
-    else: 
-        path_separator = "\\"
+    # Normalize path
+    path = path.rstrip(path_separator) + path_separator
+
     
     home = listdir(path)
     
@@ -192,28 +173,20 @@ def get_cluster(path):
 
 def write_dir(path, adatok):
 
-    # adding path separator to end if there is none
-    if not path[:-1] == "\\" and not path[:-1] == "/":
-        if len(path) > len(path.replace("/", "")): # hacky ahh solution
-            path = path + "/"
-        else: 
-            path = path + "\\"
-    
-    # deciding if the path separator is / or \
-    path_separator = ""
-    if len(path) > len(path.replace("/", "")): # hacky ahh solution
-        path_separator = "/"
-    else: 
-        path_separator = "\\"
+    # Normalize path
+    path = path.rstrip(path_separator) + path_separator
+
 
     home = listdir(path)
 
     # <><REMOVING EVERYTHING><>
     try:
-        remove(f"{path}.klaszter")
+        klaszter_file = join(path, ".klaszter")
+        if exists(klaszter_file):
+            remove(klaszter_file)
         home.remove(".klaszter")
-    except:
-        warning(f"NINCS '{path}.klaszter' FILE!")
+    except Exception as e:
+        warning(f"Error removing .klaszter: {str(e)}")
 
     for szamitogep in home:
         files = listdir(f"{path}{szamitogep}")
