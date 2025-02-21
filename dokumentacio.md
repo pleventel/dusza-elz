@@ -15,7 +15,7 @@ A projekt céljai: részvétel a Dusza Árpád Országos Programozói Emlékvers
 ### 2.2. Telepítés lépései
 Mivel a projekt futtatható konzolból és grafikus felületen keresztül egyaránt, ezért a telepítése is kétféleképpen zajlik.
 
-A grafikus felület folyamatban lévő fejleszése miatt javasoljuk a konzolos verzió használatát.
+A program egyszerűbb használatának érdekében javasoljuk a grafikus környezet használatát.
 
 #### 2.2.1. Konzolos használat
 Nyissa meg a Terminált, majd kövesse a lentebb leírt lépéseket.
@@ -33,6 +33,8 @@ Nyissa meg a Terminált, majd kövesse a lentebb leírt lépéseket.
    
    Vagy: F5 gomb megnyomásával a Pythont futtatni képes környezetben (pl. Microsoft Visual Studio Code, Microsoft Visual Studio, Python IDLE).
 Ezen lépéssel befejeződött a program telepítése. A használat módjáról az dokumentáció 3. pontjában olvashat.
+
+
 #### 2.2.2. Grafikus programkörnyezet használata
 Nyissa meg a Terminált, majd kövesse a lentebb leírt lépéseket.
 1. Projekt klónozása a GitHubról - mindkét felhasználási mód esetén:
@@ -49,7 +51,7 @@ Nyissa meg a Terminált, majd kövesse a lentebb leírt lépéseket.
     ```
 4. Program futtatása
    ```bash
-   python menu.py
+   python gui_menu.py
    ```
    Vagy: `F5` gomb megnyomásával a Pythont futtatni képes környezetben *(pl. Microsoft Visual Studio Code, Microsoft Visual Studio, Python IDLE)*.
 
