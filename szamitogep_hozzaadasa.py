@@ -11,7 +11,7 @@ lehetseges=string.ascii_letters+"0123456789"
 def helyesnev(nev: str):
     for a in nev:
         if a not in lehetseges:
-            return 1
+            return False
 
 
 def szamitogep_hozzaadasa(path: str):
@@ -22,7 +22,7 @@ def szamitogep_hozzaadasa(path: str):
     magok=input("Magok száma:")
     memoria=input("Memória mennyisége:")
     
-    if(helyesnev(nev)==1):
+    if(helyesnev(nev)==False):
         hiba("Hibás név!")
     else:
         adat['SZAMITOGEPEK'].append([{'név':nev}])
