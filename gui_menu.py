@@ -218,6 +218,159 @@ class EditProcessDialog(QDialog):
             
             self.accept()
 
+class AddComputerDialog(QDialog):
+    def __init__(self, parent, current_data):
+        super().__init__(parent)
+        self.current_data = current_data
+        self.setWindowTitle("Add New Computer")
+        self.setModal(True)
+        
+        layout = QVBoxLayout()
+        
+        # Computer name
+        self.name_edit = QLineEdit()
+        layout.addWidget(QLabel("Computer Name:"))
+        layout.addWidget(self.name_edit)
+        
+        # Specs
+        self.magszam_spin = QSpinBox()
+        self.magszam_spin.setRange(1, 1000000000)
+        self.magszam_spin.setValue(1)
+        layout.addWidget(QLabel("Magszám:"))
+        layout.addWidget(self.magszam_spin)
+        
+        self.memoriaszam_spin = QSpinBox()
+        self.memoriaszam_spin.setRange(1, 1000000000)
+        self.memoriaszam_spin.setValue(1)
+        layout.addWidget(QLabel("Memória egységek:"))
+        layout.addWidget(self.memoriaszam_spin)
+        
+        # Buttons
+        btn_layout = QHBoxLayout()
+        add_btn = QPushButton("Add")
+        add_btn.clicked.connect(self.add_computer)
+        cancel_btn = QPushButton("Cancel")
+        cancel_btn.clicked.connect(self.reject)
+        
+        btn_layout.addWidget(add_btn)
+        btn_layout.addWidget(cancel_btn)
+        layout.addLayout(btn_layout)
+        
+        self.setLayout(layout)
+
+    def add_computer(self):
+        name = self.name_edit.text().strip()
+        if not name:
+            QMessageBox.warning(self, "Error", "Computer name cannot be empty!")
+            return
+            
+        if name in self.current_data['SZAMITOGEPEK']:
+            QMessageBox.warning(self, "Error", "Computer name already exists!")
+            return
+            
+        self.current_data['SZAMITOGEPEK'][name] = {
+            'MAGSZAM': self.magszam_spin.value(),
+            'MEMORIASZAM': self.memoriaszam_spin.value()
+        }
+        
+        self.accept()
+
+class AddProcessDialog(QDialog):
+    def __init__(self, parent, current_data):
+        super().__init__(parent)
+        self.current_data = current_data
+        self.setWindowTitle("Add New Process")
+        self.setModal(True)
+        
+        layout = QVBoxLayout()
+        
+        # Process Group Name
+        self.group_edit = QLineEdit()
+        self.group_edit.setPlaceholderText("Process group name")
+        layout.addWidget(QLabel("Process Group Name:"))
+        layout.addWidget(self.group_edit)
+        
+        # Computer Selection
+        self.computer_combo = QComboBox()
+        self.computer_combo.addItems(self.current_data['SZAMITOGEPEK'].keys())
+        layout.addWidget(QLabel("Computer:"))
+        layout.addWidget(self.computer_combo)
+        
+        # Process Details
+        self.kod_edit = QLineEdit()
+        self.kod_edit.setPlaceholderText("Unique process code")
+        layout.addWidget(QLabel("Kód (unique identifier):"))
+        layout.addWidget(self.kod_edit)
+        
+        self.inditas_spin = QSpinBox()
+        self.inditas_spin.setRange(0, 999999)
+        layout.addWidget(QLabel("Indítás:"))
+        layout.addWidget(self.inditas_spin)
+        
+        self.magszam_spin = QSpinBox()
+        self.magszam_spin.setRange(1, 1000000000)
+        self.magszam_spin.setValue(1)
+        layout.addWidget(QLabel("Magszám:"))
+        layout.addWidget(self.magszam_spin)
+        
+        self.memoriaszam_spin = QSpinBox()
+        self.memoriaszam_spin.setRange(1, 1000000000)
+        self.memoriaszam_spin.setValue(1)
+        layout.addWidget(QLabel("Memória:"))
+        layout.addWidget(self.memoriaszam_spin)
+        
+        self.aktiv_check = QCheckBox("Aktív")
+        self.aktiv_check.setChecked(True)
+        layout.addWidget(self.aktiv_check)
+        
+        # Buttons
+        btn_layout = QHBoxLayout()
+        add_btn = QPushButton("Add")
+        add_btn.clicked.connect(self.add_process)
+        cancel_btn = QPushButton("Cancel")
+        cancel_btn.clicked.connect(self.reject)
+        
+        btn_layout.addWidget(add_btn)
+        btn_layout.addWidget(cancel_btn)
+        layout.addLayout(btn_layout)
+        
+        self.setLayout(layout)
+
+    def add_process(self):
+        group_name = self.group_edit.text().strip()
+        kod = self.kod_edit.text().strip()
+        
+        if not group_name:
+            QMessageBox.warning(self, "Error", "Process group name cannot be empty!")
+            return
+            
+        if not kod:
+            QMessageBox.warning(self, "Error", "Kód cannot be empty!")
+            return
+            
+        # Check for duplicate Kód in the group
+        if group_name in self.current_data['FOLYAMATOK']:
+            existing_kods = {p['KOD'] for p in self.current_data['FOLYAMATOK'][group_name]}
+            if kod in existing_kods:
+                QMessageBox.warning(self, "Error", "Kód must be unique within the group!")
+                return
+
+        new_process = {
+            'SZAMITOGEP': self.computer_combo.currentText(),
+            'KOD': kod,
+            'INDITAS': self.inditas_spin.value(),
+            'MAGSZAM': self.magszam_spin.value(),
+            'MEMORIASZAM': self.memoriaszam_spin.value(),
+            'AKTIV': self.aktiv_check.isChecked()
+        }
+        
+        # Add to data structure
+        if group_name not in self.current_data['FOLYAMATOK']:
+            self.current_data['FOLYAMATOK'][group_name] = []
+            
+        self.current_data['FOLYAMATOK'][group_name].append(new_process)
+        self.accept()
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -364,6 +517,29 @@ class MainWindow(QMainWindow):
         # Add scroll area to layout
         monitoring_layout.addWidget(scroll)
         
+        
+
+        # Add new SZÁMÍTÓGÉP
+        new_computer_btn = QPushButton("New computer")
+        new_computer_btn.setFixedSize(200, 60)
+        new_computer_btn.clicked.connect(self.open_add_computer_page) 
+
+        monitoring_layout.addLayout(self.get_h_centered_layout(new_computer_btn))
+
+        # Add new FOLYAMAT
+        new_process_btn = QPushButton("New process")
+        new_process_btn.setFixedSize(200, 60)
+        new_process_btn.clicked.connect(self.open_add_process_page)
+
+        monitoring_layout.addLayout(self.get_h_centered_layout(new_process_btn))
+
+        # Return button
+        return_btn = QPushButton("Return to actions page")
+        return_btn.setFixedSize(200, 60)
+        return_btn.clicked.connect(lambda: self.stacked_widget.setCurrentIndex(1))
+
+        monitoring_layout.addLayout(self.get_h_centered_layout(return_btn))
+
         page.setLayout(monitoring_layout)
         return page
 
@@ -458,7 +634,7 @@ class MainWindow(QMainWindow):
             try:
                 write_dir(self.MP_path_input.text().strip(), self.current_data)
             except Exception as e:
-                QMessageBox.critical(self, "Error", f"Failed to save changes to system: {str(e)}")
+                print(f"Error! Failed to save new computer: {str(e)}")
 
     def open_edit_process_page(self, process_group_name, process_index):
         if process_group_name not in self.current_data['FOLYAMATOK']:
@@ -478,7 +654,28 @@ class MainWindow(QMainWindow):
             try:
                 write_dir(self.MP_path_input.text().strip(), self.current_data)
             except Exception as e:
-                QMessageBox.critical(self, "Error", f"Failed to save changes to system: {str(e)}")
+                print(f"Error! Failed to save new computer: {str(e)}")
+    def open_add_computer_page(self):
+        dialog = AddComputerDialog(self, self.current_data)
+        if dialog.exec():
+            self.open_monitoring_page()
+            try:
+                write_dir(self.MP_path_input.text().strip(), self.current_data)
+            except Exception as e:
+                print(f"Error! Failed to save new computer: {str(e)}")
+    def open_add_process_page(self):
+        if not self.current_data['SZAMITOGEPEK']:
+            QMessageBox.warning(self, "Error", "No computers available! Create a computer first.")
+            return
+            
+        dialog = AddProcessDialog(self, self.current_data)
+        if dialog.exec():
+            self.open_monitoring_page()
+            try:
+                write_dir(self.MP_path_input.text().strip(), self.current_data)
+            except Exception as e:
+                print(f"Error! Failed to save new computer: {str(e)}")
+
 
 if __name__ == '__main__':
     app = QApplication(argv)
