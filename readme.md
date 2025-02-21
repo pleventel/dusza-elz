@@ -35,34 +35,37 @@ A projekt célja a korábban elkészített program prodoktifikálása.
    Vagy: `F5` gomb megnyomásával a Pythont futtatni képes környezetben *(pl. Microsoft Visual Studio Code, Microsoft Visual Studio, Python IDLE)*.
 
 # 3. Használati útmutató
-A program első indításakor meg kell adni az a mappát *(gyökérkönyvtárat)*, ahol a számítógépeket modellező klaszter található. Ezen lépés a program alapvető működésének feltétele<; kihagyása esetén a program hibaüzenetet küld, továbbá nem fut le.
+A program első indításakor a menübe léphetünk be. Első lépésként mindig meg kell adni az a mappát *(gyökérkönyvtárat)*, ahol a számítógépeket modellező klaszter található. Ezen lépés a program alapvető működésének feltétele<; kihagyása esetén a program hibaüzenetet küld, továbbá nem fut le.
 
 A program menürendszeréből az alábbi funkciókat választhatjuk:
 - **Monitoring**: A klaszter aktuális állapotának lekérdezése.
 - **Számítógép hozzáadása**: Új számítógép létrehozása a klaszterben.
-- **Számítógép törlése**: Egy számítógép eltávolítása a klaszterből, ha nincsenek rajta futó folyamatok.
-- **Programpéldány indítása**: Egy már meglévő, vagy program egy példányának futtatása.
+- **Számítógép törlése**: Egy számítógép eltávolítása a klaszterből *(Ez a funkció csak abban az esetben érhető el, hogyha az adott számítógépen nem fut egyetlen program egyetlen példánya sem!)*.
+- **Programpéldány indítása**: Egy már meglévő, vagy új program egy példányának futtatása.
 - **Program leállítása**: Egy adott program összes példányának leállítása.
 - **Program módosítása**: A futtatandó program példányszámának és erőforrásigényének módosítása.
 
+Az almenükből a vissza gomb megnyomásával juthatunk vissza a menübe.
+
 # 4. Fejlesztői dokumentáció
 ### 4.1. Fájlstruktúra
-- `menu.py` - A program főmenüje.
+- `menu.py` - A program főmenüje, ez jelenik meg a program elindításakor is.
 - `monitoring.py` - A klaszter állapotának megjelenítése.
 - `szamitogep_hozzaadasa.py` - Új számítógép hozzáadása.
 - `szamitogep_torlese.py` - Számítógép törlése.
 - `uj_program_futtatasa.py` - Program indítása.
 - `program_leallitasa.py` - Program leállítása.
 - `program_modositasa.py` - Program módosítása.
-- `programpeldany_leallitasa.py` - Egy adott példány leállítása.
+- `programpeldany_leallitasa.py` - Egy adott programpéldánypéldány leállítása.
 - `kihasznaltsag.py` - Számítógépek erőforrás-kihasználtságának figyelése.
-- `read_dir.py` - Könyvtárak beolvasása.
+- `read_dir.py` - Könyvtárak beolvasása *(tartalmazza a könyvtárba való írást, valamint a gyökérkönyvtár bekérését is)*.
 - `hiba.py` - Hibakezelés, visszajelző üzenetek küldése.
 
 # 5. Hibakezelés és hibaelhárítás
-- **Nem található a klaszter könyvtár**: Ellenőrizd, hogy a megfelelő elérési utat adtad meg.
-- **Egy folyamat nem indítható el**: Győződj meg róla, hogy a számítógép rendelkezik elegendő szabad erőforrással.
-- **Egy számítógép nem törölhető**: Előbb állítsd le rajta a futó folyamatokat.
+A programban található hibaüzenetek értelmezése
+- **Nem található a klaszter könyvtár**: Ellenőrizze a megadott elérési utat! Próbálkozzon annak újbóli megadásával a menüben!
+- **Egy folyamat nem indítható el**: Győződjön meg arról, hogy a számítógép rendelkezik elegendő szabad erőforrással a folyamat futtatására. Amennyiben lehetséges, próbálja meg a rendelkezésre álló erőforrások átcsoportosítását!
+- **Egy számítógép nem törölhető**: A számítógép leállítása/törlése nem lehetséges, mivel futnak rajta folyamatok. A törléshez először állítsa le a folyamatokat!
 
 # 6. Korlátok és ismert problémák
 - Az alkalmazás nem támogatja a valós idejű klaszterkezelést.
