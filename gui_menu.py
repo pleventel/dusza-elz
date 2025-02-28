@@ -3,26 +3,78 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
                               QScrollArea, QGroupBox, QFrame, QDialog, QMessageBox,
                               QSpinBox, QInputDialog, QComboBox, QCheckBox)
 from PySide6.QtCore import Qt
-from sys import argv
+from sys import argv, platform
 from collections import defaultdict
 
 from read_dir import read_dir, write_dir
 
+from PySide6.QtGui import QPalette, QColor, QFont
+
 from datetime import datetime
+import subprocess
+
+import sys
+def is_dark_mode():
+    if sys.platform.startswith("win"):
+        try:
+            import winreg
+            # Connect to the registry and open the personalization key
+            registry = winreg.ConnectRegistry(None, winreg.HKEY_CURRENT_USER)
+            key = winreg.OpenKey(
+                registry,
+                r"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"
+            )
+            # Retrieve the AppsUseLightTheme value: 0 indicates dark mode.
+            value, _ = winreg.QueryValueEx(key, "AppsUseLightTheme")
+            winreg.CloseKey(key)
+            return value == 0
+        except Exception as e:
+            # If the registry cannot be read, assume light mode.
+            return False
+
+    elif sys.platform.startswith("linux"):
+        # Try to detect dark mode via GNOME settings.
+        try:
+            import subprocess
+            result = subprocess.run(
+                ["gsettings", "get", "org.gnome.desktop.interface", "color-scheme"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
+            if result.returncode == 0:
+                # The output is typically "'prefer-dark'" for dark mode.
+                scheme = result.stdout.strip()
+                return "prefer-dark" in scheme.lower()
+        except Exception:
+            pass
+
+        # Fallback: Check the GTK_THEME environment variable
+        import os
+        gtk_theme = os.environ.get("GTK_THEME", "")
+        if "dark" in gtk_theme.lower():
+            return True
+
+        return False
+
+    else:
+        # Default to light mode for unsupported OS
+        return False
 
 class EditComputerDialog(QDialog):
     def __init__(self, parent, old_name, current_data):
         super().__init__(parent)
         self.old_name = old_name
         self.current_data = current_data
-        self.setWindowTitle("Edit Computer")
+        self.setWindowTitle("Számítógép szerkesztése")
+        self.setGeometry(500, 100, 600, 200)
         self.setModal(True)
         
         layout = QVBoxLayout()
         
         # Computer name
         self.name_edit = QLineEdit(old_name)
-        layout.addWidget(QLabel("Computer Name:"))
+        layout.addWidget(QLabel("Számítógép neve:"))
         layout.addWidget(self.name_edit)
         
         # Specs
@@ -41,11 +93,11 @@ class EditComputerDialog(QDialog):
         
         # Buttons
         btn_layout = QHBoxLayout()
-        save_btn = QPushButton("Save")
+        save_btn = QPushButton("Mentés")
         save_btn.clicked.connect(self.save_changes)
-        delete_btn = QPushButton("Delete")
+        delete_btn = QPushButton("Törlés")
         delete_btn.clicked.connect(self.delete_computer)
-        cancel_btn = QPushButton("Cancel")
+        cancel_btn = QPushButton("Mégse")
         cancel_btn.clicked.connect(self.reject)
         
         btn_layout.addWidget(save_btn)
@@ -58,8 +110,13 @@ class EditComputerDialog(QDialog):
     def save_changes(self):
         new_name = self.name_edit.text().strip()
         if not new_name:
-            QMessageBox.warning(self, "Error", "Computer name cannot be empty!")
+            QMessageBox.warning(self, "Hiba", "A számítógép neve nem lehet üres!")
             return
+        
+        if new_name in self.current_data['SZAMITOGEPEK']:
+            QMessageBox.warning(self, "Hiba", "Létezik számítógép már ilyen néven!")
+            return
+        
             
         specs = {
             'MAGSZAM': self.magszam_spin.value(),
@@ -84,8 +141,8 @@ class EditComputerDialog(QDialog):
     def delete_computer(self):
         confirm = QMessageBox.question(
             self, 
-            "Confirm Delete",
-            f"Delete {self.old_name} and all its processes?",
+            "Törlés megerősítése",
+            f"Biztos ki szeretné törölni a {self.old_name} számítógépet és minden alfolyamatát?",
             QMessageBox.Yes | QMessageBox.No
         )
         
@@ -112,14 +169,15 @@ class EditProcessDialog(QDialog):
         self.original_name = process_group_name
         self.process = current_data['FOLYAMATOK'][process_group_name][process_index]
         
-        self.setWindowTitle("Edit Process")
+        self.setWindowTitle("Folyamat szerkesztése")
+        self.setGeometry(500, 100, 600, 400)
         self.setModal(True)
         
         layout = QVBoxLayout()
         
         # Process Name
         self.name_edit = QLineEdit(self.process_group_name)
-        layout.addWidget(QLabel("Process Group Name:"))
+        layout.addWidget(QLabel("Folyamat neve:"))
         layout.addWidget(self.name_edit)
         
         # Computer Selection
@@ -128,13 +186,13 @@ class EditProcessDialog(QDialog):
         current_computer = self.process['SZAMITOGEP']
         if current_computer in self.current_data['SZAMITOGEPEK']:
             self.computer_combo.setCurrentText(current_computer)
-        layout.addWidget(QLabel("Computer:"))
+        layout.addWidget(QLabel("Számítógép:"))
         layout.addWidget(self.computer_combo)
         
         # Process Details
         self.kod_edit = QLineEdit(self.process['KOD'])
         self.kod_edit.setPlaceholderText("Kód...")
-        layout.addWidget(QLabel("Kód (egyedinek kell lennie):"))
+        layout.addWidget(QLabel("Kód (egyedi azonosító):"))
         layout.addWidget(self.kod_edit)
         
         self.inditas_edit = QLineEdit(self.process['INDITAS'])
@@ -159,11 +217,11 @@ class EditProcessDialog(QDialog):
         
         # Buttons
         btn_layout = QHBoxLayout()
-        save_btn = QPushButton("Save")
+        save_btn = QPushButton("Mentés")
         save_btn.clicked.connect(self.save_changes)
-        delete_btn = QPushButton("Delete")
+        delete_btn = QPushButton("Törlés")
         delete_btn.clicked.connect(self.delete_process)
-        cancel_btn = QPushButton("Cancel")
+        cancel_btn = QPushButton("Mégse")
         cancel_btn.clicked.connect(self.reject)
         
         btn_layout.addWidget(save_btn)
@@ -176,19 +234,39 @@ class EditProcessDialog(QDialog):
     def save_changes(self):
         new_name = self.name_edit.text().strip()
         if not new_name:
-            QMessageBox.warning(self, "Error", "Process group name cannot be empty!")
+            QMessageBox.warning(self, "Hiba", "A folyamat neve nem lehet üres!")
+            return
+        
+
+        kodok = set()
+        for group in self.current_data['FOLYAMATOK'].values():
+            for group_process in group:
+                kodok.add(group_process['KOD'])
+
+        if self.kod_edit.text() in kodok:
+            QMessageBox.warning(self, "Hiba", "A folyamat egyedi azonosítója már használatban van!")
             return
             
-        # Update process group name if changed
+        # Carry process to a different group if changed
         if new_name != self.process_group_name:
-            # Handle name change
-            if new_name in self.current_data['FOLYAMATOK']:
-                QMessageBox.warning(self, "Error", "Process group name already exists!")
-                return
-                
             # Move processes to new group name
-            self.current_data['FOLYAMATOK'][new_name] = self.current_data['FOLYAMATOK'].pop(self.process_group_name)
+
+            process = self.current_data['FOLYAMATOK'][self.process_group_name].pop( self.process_index )
+            if len(self.current_data['FOLYAMATOK'][self.process_group_name]) == 0:
+                del self.current_data['FOLYAMATOK'][self.process_group_name]
+
+            if new_name in self.current_data['FOLYAMATOK'].keys():
+                self.current_data['FOLYAMATOK'][new_name].append( process )
+                self.process_index = len(self.current_data['FOLYAMATOK'][new_name]) - 1
+
+            else:
+                self.current_data['FOLYAMATOK'][new_name] = [ process ]
+                self.process_index = 0
+
             self.process_group_name = new_name
+
+        
+        self.process = self.current_data['FOLYAMATOK'][self.process_group_name][self.process_index]
 
         # Update process data
         self.process.update({
@@ -205,8 +283,8 @@ class EditProcessDialog(QDialog):
     def delete_process(self):
         confirm = QMessageBox.question(
             self,
-            "Confirm Delete",
-            "Delete this process?",
+            "Törlés megerősítése",
+            "Biztos ki szeretné törölni ezt a folyamatot?",
             QMessageBox.Yes | QMessageBox.No
         )
         
@@ -224,14 +302,15 @@ class AddComputerDialog(QDialog):
     def __init__(self, parent, current_data):
         super().__init__(parent)
         self.current_data = current_data
-        self.setWindowTitle("Add New Computer")
+        self.setWindowTitle("Új számítógép hozzáadása")
+        self.setGeometry(500, 100, 600, 200)
         self.setModal(True)
         
         layout = QVBoxLayout()
         
         # Computer name
         self.name_edit = QLineEdit()
-        layout.addWidget(QLabel("Computer Name:"))
+        layout.addWidget(QLabel("Számítógép neve:"))
         layout.addWidget(self.name_edit)
         
         # Specs
@@ -244,14 +323,14 @@ class AddComputerDialog(QDialog):
         self.memoriaszam_spin = QSpinBox()
         self.memoriaszam_spin.setRange(1, 1000000000)
         self.memoriaszam_spin.setValue(1)
-        layout.addWidget(QLabel("Memória egységek:"))
+        layout.addWidget(QLabel("Memória egységek száma:"))
         layout.addWidget(self.memoriaszam_spin)
         
         # Buttons
         btn_layout = QHBoxLayout()
-        add_btn = QPushButton("Add")
+        add_btn = QPushButton("Hozzáad")
         add_btn.clicked.connect(self.add_computer)
-        cancel_btn = QPushButton("Cancel")
+        cancel_btn = QPushButton("Mégse")
         cancel_btn.clicked.connect(self.reject)
         
         btn_layout.addWidget(add_btn)
@@ -263,11 +342,11 @@ class AddComputerDialog(QDialog):
     def add_computer(self):
         name = self.name_edit.text().strip()
         if not name:
-            QMessageBox.warning(self, "Error", "Computer name cannot be empty!")
+            QMessageBox.warning(self, "Hiba", "A számítógép neve nem lehet üres")
             return
             
         if name in self.current_data['SZAMITOGEPEK']:
-            QMessageBox.warning(self, "Error", "Computer name already exists!")
+            QMessageBox.warning(self, "Hiba", "Létezik már számítógép ilyen néven!")
             return
             
         self.current_data['SZAMITOGEPEK'][name] = {
@@ -281,27 +360,28 @@ class AddProcessDialog(QDialog):
     def __init__(self, parent, current_data):
         super().__init__(parent)
         self.current_data = current_data
-        self.setWindowTitle("Add New Process")
+        self.setWindowTitle("Új folyamat hozzáadása")
+        self.setGeometry(500, 100, 600, 400)
         self.setModal(True)
         
         layout = QVBoxLayout()
         
         # Process Group Name
         self.group_edit = QLineEdit()
-        self.group_edit.setPlaceholderText("Process group name")
-        layout.addWidget(QLabel("Process Group Name:"))
+        self.group_edit.setPlaceholderText("Folyamat neve...")
+        layout.addWidget(QLabel("Folyamat neve:"))
         layout.addWidget(self.group_edit)
         
         # Computer Selection
         self.computer_combo = QComboBox()
         self.computer_combo.addItems(self.current_data['SZAMITOGEPEK'].keys())
-        layout.addWidget(QLabel("Computer:"))
+        layout.addWidget(QLabel("Számítógép:"))
         layout.addWidget(self.computer_combo)
         
         # Process Details
         self.kod_edit = QLineEdit()
-        self.kod_edit.setPlaceholderText("Unique process code")
-        layout.addWidget(QLabel("Kód (unique identifier):"))
+        self.kod_edit.setPlaceholderText("Kód...")
+        layout.addWidget(QLabel("Kód (egyedi azonosító):"))
         layout.addWidget(self.kod_edit)
         
         self.magszam_spin = QSpinBox()
@@ -322,9 +402,9 @@ class AddProcessDialog(QDialog):
         
         # Buttons
         btn_layout = QHBoxLayout()
-        add_btn = QPushButton("Add")
+        add_btn = QPushButton("Hozzáad")
         add_btn.clicked.connect(self.add_process)
-        cancel_btn = QPushButton("Cancel")
+        cancel_btn = QPushButton("Mégse")
         cancel_btn.clicked.connect(self.reject)
         
         btn_layout.addWidget(add_btn)
@@ -338,11 +418,11 @@ class AddProcessDialog(QDialog):
         kod = self.kod_edit.text().strip()
         
         if not group_name:
-            QMessageBox.warning(self, "Error", "Process group name cannot be empty!")
+            QMessageBox.warning(self, "Hiba", "A folyamat neve nem lehet üres!")
             return
             
         if not kod:
-            QMessageBox.warning(self, "Error", "Kód cannot be empty!")
+            QMessageBox.warning(self, "Hiba", "A kód nem lehet üres!")
             return
         
         # Get current date/time
@@ -352,11 +432,14 @@ class AddProcessDialog(QDialog):
         self.inditas = current_datetime.strftime(r"%Y-%m-%d %H:%M:%S")
 
         # Check for duplicate Kód in the group
-        if group_name in self.current_data['FOLYAMATOK']:
-            existing_kods = {p['KOD'] for p in self.current_data['FOLYAMATOK'][group_name]}
-            if kod in existing_kods:
-                QMessageBox.warning(self, "Error", "Kód must be unique within the group!")
-                return
+        kodok = set()
+        for group in self.current_data['FOLYAMATOK'].values():
+            for group_process in group:
+                kodok.add(group_process['KOD'])
+
+        if self.kod_edit.text() in kodok:
+            QMessageBox.warning(self, "Hiba", "A folyamat egyedi azonosítója már használatban van!")
+            return
 
         new_process = {
             'SZAMITOGEP': self.computer_combo.currentText(),
@@ -381,6 +464,15 @@ class MainWindow(QMainWindow):
         self.setGeometry(500, 100, 1200, 800)
         self.setMinimumSize(1200, 800)
 
+        # Create title fonts
+        self.h1_font = QFont()
+        self.h1_font.setPointSize(24)
+        self.h1_font.setBold(True)
+
+        self.h2_font = QFont()
+        self.h2_font.setPointSize(14)
+        self.h2_font.setBold(True)
+
         # Create a QStackedWidget
         self.stacked_widget = QStackedWidget()
         self.setCentralWidget(self.stacked_widget)
@@ -394,27 +486,32 @@ class MainWindow(QMainWindow):
         self.stacked_widget.addWidget(self.actions_page)
         self.stacked_widget.addWidget(self.monitoring_page)
 
+        self.is_dark_scheme = None
+        self.set_light_scheme()
+        if is_dark_mode():
+            self.toggle_scheme()
+        
     
     def create_menu_page(self):
         page = QWidget()
         menu_layout = QVBoxLayout()
         menu_layout.setContentsMargins(20, 20, 20, 20)
 
-        title = QLabel("Main menu")
+        title = QLabel("Főmenu")
         title.setAlignment(Qt.AlignCenter)
-        title.setStyleSheet("font-size: 24px; font-weight: bold; margin-bottom: 20px;")
+        title.setFont(self.h2_font)
         menu_layout.addWidget(title)
 
         path_layout = QHBoxLayout()
 
         # MP: Menu page
         self.MP_path_input = QLineEdit()
-        self.MP_path_input.setPlaceholderText("Select folder path...")
+        self.MP_path_input.setPlaceholderText("Mappa elérési útja...")
 
-        browse_btn = QPushButton("Browse")
+        browse_btn = QPushButton("Tallózás")
         browse_btn.clicked.connect(self.browse_folder)
 
-        self.MP_open_btn = QPushButton("Open")
+        self.MP_open_btn = QPushButton("Megnyit")
         self.MP_open_btn.clicked.connect(self.open_path_page)
 
         path_layout.addWidget(self.MP_path_input)
@@ -429,7 +526,7 @@ class MainWindow(QMainWindow):
         return page;
 
     def browse_folder(self):
-        folder = QFileDialog.getExistingDirectory(self, "Select Folder")
+        folder = QFileDialog.getExistingDirectory(self, "Mappa kiválasztása")
         if folder:
             self.MP_path_input.setText(folder)
 
@@ -439,21 +536,21 @@ class MainWindow(QMainWindow):
         actions_layout.setContentsMargins(20, 20, 20, 20)
 
         # The title text, and below it the path
-        title = QLabel("Actions for:")
+        title = QLabel("Műveletek:")
         title.setAlignment(Qt.AlignCenter)
-        title.setStyleSheet("font-size: 24px; font-weight: bold; margin-bottom: 2px;")
+        title.setFont(self.h1_font)
         actions_layout.addWidget(title)
 
         self.AP_subtitle = QLabel("") # setting text at open_path_page()
         self.AP_subtitle.setAlignment(Qt.AlignCenter)
-        self.AP_subtitle.setStyleSheet("font-size: 14px; font-style: italic; margin-bottom: 20px;")
+        self.AP_subtitle.setFont(self.h2_font)
         actions_layout.addWidget(self.AP_subtitle)
 
         # Add some spacing
         actions_layout.addSpacing(15)
 
         # Monitoring button
-        monitoring_btn = QPushButton("Monitoring")
+        monitoring_btn = QPushButton("Rendszer felügyelet")
         monitoring_btn.clicked.connect(self.open_monitoring_page)
         monitoring_btn.setFixedSize(200, 60)
 
@@ -462,8 +559,18 @@ class MainWindow(QMainWindow):
         # Add spacing
         actions_layout.addSpacing(20)
 
+        # Monitoring button
+        self.switch_color_scheme_btn = QPushButton("Sötét módra váltás")
+        self.switch_color_scheme_btn.clicked.connect(self.toggle_scheme)
+        self.switch_color_scheme_btn.setFixedSize(200, 60)
+
+        actions_layout.addLayout(self.get_h_centered_layout(self.switch_color_scheme_btn))
+
+        # Add spacing
+        actions_layout.addSpacing(20)
+
         # Return button
-        return_btn = QPushButton("Return to selection page")
+        return_btn = QPushButton("Vissza a főmenübe")
         return_btn.setFixedSize(200, 60)
         return_btn.clicked.connect(lambda: self.stacked_widget.setCurrentIndex(0))
 
@@ -475,6 +582,54 @@ class MainWindow(QMainWindow):
         page.setLayout(actions_layout)
 
         return page
+    
+    def toggle_scheme(self):
+        if self.is_dark_scheme:
+            # Switch to light scheme
+            self.set_light_scheme()
+
+            # Change button label
+            self.switch_color_scheme_btn.setText("Sötét módra váltás")
+        else:
+            # Switch to dark scheme
+            self.set_dark_scheme()
+
+            # Change button label
+            self.switch_color_scheme_btn.setText("Világos módra váltás")
+
+    def set_dark_scheme(self):
+        dark_palette = QPalette()
+        
+        dark_palette.setColor(QPalette.Window, QColor(53, 53, 53))
+        dark_palette.setColor(QPalette.WindowText, Qt.white)
+        dark_palette.setColor(QPalette.Base, QColor(25, 25, 25))
+        dark_palette.setColor(QPalette.Text, Qt.white)
+        dark_palette.setColor(QPalette.Button, QColor(53, 53, 53))
+        dark_palette.setColor(QPalette.ButtonText, Qt.white)
+        dark_palette.setColor(QPalette.Highlight, QColor(142, 45, 197))
+        dark_palette.setColor(QPalette.HighlightedText, Qt.black)
+
+        # Apply the dark palette
+        app.setPalette(dark_palette)
+
+        self.is_dark_scheme = True
+    
+    def set_light_scheme(self):
+        light_palette = QPalette()
+
+        light_palette.setColor(QPalette.Window, QColor(240, 240, 240))
+        light_palette.setColor(QPalette.WindowText, Qt.black)
+        light_palette.setColor(QPalette.Base, Qt.white)
+        light_palette.setColor(QPalette.Text, Qt.black)
+        light_palette.setColor(QPalette.Button, QColor(224, 224, 224))
+        light_palette.setColor(QPalette.ButtonText, Qt.black)
+        light_palette.setColor(QPalette.Highlight, QColor(33, 150, 243))
+        light_palette.setColor(QPalette.HighlightedText, Qt.white)
+
+        # Apply the dark palette
+        app.setPalette(light_palette)
+
+        self.is_dark_scheme = False
 
     def get_h_centered_layout(self, widget) -> QHBoxLayout:
         h_layout = QHBoxLayout()
@@ -491,7 +646,7 @@ class MainWindow(QMainWindow):
                 self.stacked_widget.setCurrentIndex(1)
                 self.AP_subtitle.setText(path)
             except Exception as e:
-                QMessageBox.critical(self, "Error", f"Failed to load directory: {str(e)}")    
+                QMessageBox.critical(self, "Hiba", f"Nem sikerült betölteni a mappát: {str(e)}")    
     
     def create_monitoring_page(self):
         page = QWidget()
@@ -499,15 +654,15 @@ class MainWindow(QMainWindow):
         monitoring_layout.setContentsMargins(20, 20, 20, 20)
 
         # Title and path
-        title = QLabel("Monitoring for:")
+        title = QLabel("Rendszer felügyelet a következő mappára:")
         title.setAlignment(Qt.AlignCenter)
-        title.setStyleSheet("font-size: 24px; font-weight: bold; margin-bottom: 2px;")
+        title.setFont(self.h1_font)
         monitoring_layout.addWidget(title)
         
         # Create a NEW subtitle for monitoring page
         self.MP_subtitle = QLabel("")
         self.MP_subtitle.setAlignment(Qt.AlignCenter)
-        self.MP_subtitle.setStyleSheet("font-size: 14px; font-style: italic; margin-bottom: 20px;")
+        self.MP_subtitle.setFont(self.h2_font)
         monitoring_layout.addWidget(self.MP_subtitle)
 
         # Scroll area setup
@@ -523,21 +678,21 @@ class MainWindow(QMainWindow):
         
 
         # Add new SZÁMÍTÓGÉP
-        new_computer_btn = QPushButton("New computer")
+        new_computer_btn = QPushButton("Új számítógép")
         new_computer_btn.setFixedSize(200, 60)
         new_computer_btn.clicked.connect(self.open_add_computer_page) 
 
         monitoring_layout.addLayout(self.get_h_centered_layout(new_computer_btn))
 
         # Add new FOLYAMAT
-        new_process_btn = QPushButton("New process")
+        new_process_btn = QPushButton("Új folyamat")
         new_process_btn.setFixedSize(200, 60)
         new_process_btn.clicked.connect(self.open_add_process_page)
 
         monitoring_layout.addLayout(self.get_h_centered_layout(new_process_btn))
 
         # Return button
-        return_btn = QPushButton("Return to actions page")
+        return_btn = QPushButton("Vissza a műveletekhez")
         return_btn.setFixedSize(200, 60)
         return_btn.clicked.connect(lambda: self.stacked_widget.setCurrentIndex(1))
 
@@ -577,7 +732,7 @@ class MainWindow(QMainWindow):
                 
                 # Computer specs
                 specs_layout = QHBoxLayout()
-                comp_edit_btn = QPushButton("Edit computer")
+                comp_edit_btn = QPushButton("Szerkesztés")
                 comp_edit_btn.clicked.connect(lambda _, cn=computer_name: self.open_edit_computer_page(cn))
                 specs_layout.addWidget(comp_edit_btn)
                 specs_layout.addWidget(QLabel(f"Magszám: {specs['MAGSZAM']}"))
@@ -603,7 +758,7 @@ class MainWindow(QMainWindow):
                     
                     process_layout = QHBoxLayout()
                     process_layout.addWidget(QLabel(f"{process['NEV']}"))
-                    pro_edit_btn = QPushButton("Edit")
+                    pro_edit_btn = QPushButton("Szerkesztés")
                     pro_edit_btn.clicked.connect(lambda _, pg=process['NEV'], idx=i: self.open_edit_process_page(pg, idx))
                     process_layout.addWidget(pro_edit_btn)
 
@@ -623,7 +778,7 @@ class MainWindow(QMainWindow):
             self.scroll_layout.addStretch()
         
         except Exception as e:
-            print(f"Error loading data: {e}")
+            print(f"Hiba az adatok betöltésekor: {e}")
     
     def open_edit_computer_page(self, computer_name):
         if computer_name not in self.current_data['SZAMITOGEPEK']:
@@ -637,7 +792,7 @@ class MainWindow(QMainWindow):
             try:
                 write_dir(self.MP_path_input.text().strip(), self.current_data)
             except Exception as e:
-                print(f"Error! Failed to save new computer: {str(e)}")
+                print(f"Hiba! Nem sikerült menteni az új számítógépet: {str(e)}")
 
     def open_edit_process_page(self, process_group_name, process_index):
         if process_group_name not in self.current_data['FOLYAMATOK']:
@@ -657,7 +812,7 @@ class MainWindow(QMainWindow):
             try:
                 write_dir(self.MP_path_input.text().strip(), self.current_data)
             except Exception as e:
-                print(f"Error! Failed to save new computer: {str(e)}")
+                print(f"Hiba! Nem sikerült menteni az új számítógépet: {str(e)}")
     def open_add_computer_page(self):
         dialog = AddComputerDialog(self, self.current_data)
         if dialog.exec():
@@ -665,10 +820,10 @@ class MainWindow(QMainWindow):
             try:
                 write_dir(self.MP_path_input.text().strip(), self.current_data)
             except Exception as e:
-                print(f"Error! Failed to save new computer: {str(e)}")
+                print(f"Hiba! Nem sikerült menteni az új számítógépet: {str(e)}")
     def open_add_process_page(self):
         if not self.current_data['SZAMITOGEPEK']:
-            QMessageBox.warning(self, "Error", "No computers available! Create a computer first.")
+            QMessageBox.warning(self, "Hiba", "Nincs elérhető számítógép, adj hozzá egy számítógépet elsőnek!")
             return
             
         dialog = AddProcessDialog(self, self.current_data)
@@ -677,11 +832,15 @@ class MainWindow(QMainWindow):
             try:
                 write_dir(self.MP_path_input.text().strip(), self.current_data)
             except Exception as e:
-                print(f"Error! Failed to save new computer: {str(e)}")
+                print(f"Hiba! Nem sikerült menteni az új számítógépet: {str(e)}")
 
 
 if __name__ == '__main__':
+
     app = QApplication(argv)
+
+    app.setStyle("Fusion")
+
     window = MainWindow()
     window.show()
     app.exec()

@@ -50,7 +50,10 @@ def read_dir(path):
                 })
     except:
         error("nincs vagy hibás a .klaszer file") # át kéne irni hibara
-        return -1
+        return {
+                'SZAMITOGEPEK': {},
+                'FOLYAMATOK': {} 
+                }
     
     adatok = dict()
     adatok['SZAMITOGEPEK'] = dict()
