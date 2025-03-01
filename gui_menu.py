@@ -238,17 +238,20 @@ class EditProcessDialog(QDialog):
             QMessageBox.warning(self, "Hiba", "A folyamat neve nem lehet üres!")
             return
         
+        # Ha a kód meg lett változtatva
+        if self.kod_edit.text() != self.process['KOD']:
+            if not self.kod_edit.text():
+                QMessageBox.warning(self, "Hiba", "A folyamat kódja nem lehet üres!")
+                return
 
-        kodok = set()
-        for group in self.current_data['FOLYAMATOK'].values():
-            for group_process in group:
-                kodok.add(group_process['KOD'])
-        
+            kodok = set()
+            for group in self.current_data['FOLYAMATOK'].values():
+                for group_process in group:
+                    kodok.add(group_process['KOD'])
 
-        kodok.remove(self.kod_edit.text())
-        if self.kod_edit.text() in kodok:
-            QMessageBox.warning(self, "Hiba", "A folyamat egyedi azonosítója már használatban van!")
-            return
+            if self.kod_edit.text() in kodok:
+                QMessageBox.warning(self, "Hiba", "A folyamat új egyedi azonosítója már használatban van!")
+                return
             
         # Carry process to a different group if changed
         if new_name != self.process_group_name:
