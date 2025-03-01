@@ -113,18 +113,19 @@ class EditComputerDialog(QDialog):
             QMessageBox.warning(self, "Hiba", "A számítógép neve nem lehet üres!")
             return
         
-        if new_name in self.current_data['SZAMITOGEPEK']:
-            QMessageBox.warning(self, "Hiba", "Létezik számítógép már ilyen néven!")
-            return
-        
             
         specs = {
             'MAGSZAM': self.magszam_spin.value(),
             'MEMORIASZAM': self.memoriaszam_spin.value()
         }
         
-        # Update computer name if changed
+        
         if new_name != self.old_name:
+
+            if new_name in self.current_data['SZAMITOGEPEK']:
+                QMessageBox.warning(self, "Hiba", "Létezik számítógép már ilyen néven!")
+                return
+
             # Update SZAMITOGEPEK
             self.current_data['SZAMITOGEPEK'][new_name] = self.current_data['SZAMITOGEPEK'].pop(self.old_name)
             
@@ -242,7 +243,9 @@ class EditProcessDialog(QDialog):
         for group in self.current_data['FOLYAMATOK'].values():
             for group_process in group:
                 kodok.add(group_process['KOD'])
+        
 
+        kodok.remove(self.kod_edit.text())
         if self.kod_edit.text() in kodok:
             QMessageBox.warning(self, "Hiba", "A folyamat egyedi azonosítója már használatban van!")
             return
@@ -461,8 +464,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("ELZ GUI")
-        self.setGeometry(500, 100, 1200, 800)
-        self.setMinimumSize(1200, 800)
+        self.setGeometry(500, 100, 1600, 1000)
 
         # Create title fonts
         self.h1_font = QFont()
@@ -470,8 +472,13 @@ class MainWindow(QMainWindow):
         self.h1_font.setBold(True)
 
         self.h2_font = QFont()
-        self.h2_font.setPointSize(14)
+        self.h2_font.setPointSize(18)
         self.h2_font.setBold(True)
+
+        self.default_font = QApplication.font()
+        self.default_font.setPointSize(20)
+
+        app.setFont(self.default_font)
 
         # Create a QStackedWidget
         self.stacked_widget = QStackedWidget()
@@ -499,19 +506,23 @@ class MainWindow(QMainWindow):
 
         title = QLabel("Főmenu")
         title.setAlignment(Qt.AlignCenter)
-        title.setFont(self.h2_font)
+        title.setFont(self.h1_font)
         menu_layout.addWidget(title)
+        menu_layout.addStretch()
 
         path_layout = QHBoxLayout()
 
         # MP: Menu page
         self.MP_path_input = QLineEdit()
+        self.MP_path_input.setFixedHeight(60)
         self.MP_path_input.setPlaceholderText("Mappa elérési útja...")
 
         browse_btn = QPushButton("Tallózás")
+        browse_btn.setFixedSize(150, 60)
         browse_btn.clicked.connect(self.browse_folder)
 
         self.MP_open_btn = QPushButton("Megnyit")
+        self.MP_open_btn.setFixedSize(150, 60)
         self.MP_open_btn.clicked.connect(self.open_path_page)
 
         path_layout.addWidget(self.MP_path_input)
@@ -523,7 +534,7 @@ class MainWindow(QMainWindow):
         menu_layout.addStretch()
 
         page.setLayout(menu_layout)
-        return page;
+        return page
 
     def browse_folder(self):
         folder = QFileDialog.getExistingDirectory(self, "Mappa kiválasztása")
@@ -550,9 +561,9 @@ class MainWindow(QMainWindow):
         actions_layout.addSpacing(15)
 
         # Monitoring button
-        monitoring_btn = QPushButton("Rendszer felügyelet")
+        monitoring_btn = QPushButton("  Rendszer felügyelet  ")
         monitoring_btn.clicked.connect(self.open_monitoring_page)
-        monitoring_btn.setFixedSize(200, 60)
+        monitoring_btn.setFixedHeight(80)
 
         actions_layout.addLayout(self.get_h_centered_layout(monitoring_btn))
 
@@ -560,9 +571,9 @@ class MainWindow(QMainWindow):
         actions_layout.addSpacing(20)
 
         # Monitoring button
-        self.switch_color_scheme_btn = QPushButton("Sötét módra váltás")
+        self.switch_color_scheme_btn = QPushButton("  Sötét módra váltás  ")
         self.switch_color_scheme_btn.clicked.connect(self.toggle_scheme)
-        self.switch_color_scheme_btn.setFixedSize(200, 60)
+        self.switch_color_scheme_btn.setFixedHeight(80)
 
         actions_layout.addLayout(self.get_h_centered_layout(self.switch_color_scheme_btn))
 
@@ -570,8 +581,8 @@ class MainWindow(QMainWindow):
         actions_layout.addSpacing(20)
 
         # Return button
-        return_btn = QPushButton("Vissza a főmenübe")
-        return_btn.setFixedSize(200, 60)
+        return_btn = QPushButton("  Vissza a főmenübe  ")
+        return_btn.setFixedHeight(80)
         return_btn.clicked.connect(lambda: self.stacked_widget.setCurrentIndex(0))
 
         actions_layout.addLayout(self.get_h_centered_layout(return_btn))
@@ -589,13 +600,13 @@ class MainWindow(QMainWindow):
             self.set_light_scheme()
 
             # Change button label
-            self.switch_color_scheme_btn.setText("Sötét módra váltás")
+            self.switch_color_scheme_btn.setText("  Sötét módra váltás  ")
         else:
             # Switch to dark scheme
             self.set_dark_scheme()
 
             # Change button label
-            self.switch_color_scheme_btn.setText("Világos módra váltás")
+            self.switch_color_scheme_btn.setText("  Világos módra váltás  ")
 
     def set_dark_scheme(self):
         dark_palette = QPalette()
@@ -678,22 +689,22 @@ class MainWindow(QMainWindow):
         
 
         # Add new SZÁMÍTÓGÉP
-        new_computer_btn = QPushButton("Új számítógép")
-        new_computer_btn.setFixedSize(200, 60)
+        new_computer_btn = QPushButton("  Új számítógép  ")
+        new_computer_btn.setFixedHeight(60)
         new_computer_btn.clicked.connect(self.open_add_computer_page) 
 
         monitoring_layout.addLayout(self.get_h_centered_layout(new_computer_btn))
 
         # Add new FOLYAMAT
-        new_process_btn = QPushButton("Új folyamat")
-        new_process_btn.setFixedSize(200, 60)
+        new_process_btn = QPushButton("  Új folyamat  ")
+        new_process_btn.setFixedHeight(60)
         new_process_btn.clicked.connect(self.open_add_process_page)
 
         monitoring_layout.addLayout(self.get_h_centered_layout(new_process_btn))
 
         # Return button
-        return_btn = QPushButton("Vissza a műveletekhez")
-        return_btn.setFixedSize(200, 60)
+        return_btn = QPushButton("  Vissza a műveletekhez  ")
+        return_btn.setFixedHeight(60)
         return_btn.clicked.connect(lambda: self.stacked_widget.setCurrentIndex(1))
 
         monitoring_layout.addLayout(self.get_h_centered_layout(return_btn))
@@ -735,8 +746,36 @@ class MainWindow(QMainWindow):
                 comp_edit_btn = QPushButton("Szerkesztés")
                 comp_edit_btn.clicked.connect(lambda _, cn=computer_name: self.open_edit_computer_page(cn))
                 specs_layout.addWidget(comp_edit_btn)
-                specs_layout.addWidget(QLabel(f"Magszám: {specs['MAGSZAM']}"))
-                specs_layout.addWidget(QLabel(f"Memória egységek: {specs['MEMORIASZAM']}"))
+
+                # Loop thrugh the processes and sum up the magszám and memória egységek for active and inactive separately
+                active_magszam = 0
+                inactive_magszam = 0
+                active_memoriaszam = 0
+                inactive_memoriaszam = 0
+                for _process_group in data['FOLYAMATOK'].values():
+                    for process in _process_group:
+                        if process['SZAMITOGEP'] == computer_name:
+                            _magszam = process['MAGSZAM']
+                            _memoriaszam = process['MEMORIASZAM']
+
+                            if process['AKTIV']:
+                                active_magszam += _magszam
+                                active_memoriaszam += _memoriaszam
+                            else:
+                                inactive_magszam += _magszam
+                                inactive_memoriaszam += _memoriaszam
+
+                error_text = ""
+                if active_memoriaszam > specs['MEMORIASZAM'] and active_magszam > specs['MAGSZAM']:
+                    error_text = "・  Memória- és magszám túllépés!"
+                elif active_memoriaszam > specs['MEMORIASZAM']:
+                    error_text = "・  Memóriaszám túllépés!"
+                elif active_magszam > specs['MAGSZAM']:
+                    error_text = "・  Magszám túllépés!"
+
+                specs_layout.addWidget(QLabel(f"Magszám: {active_magszam + inactive_magszam}/{specs['MAGSZAM']}, aktív: {active_magszam}, inaktív: {inactive_magszam}  ・"))
+                specs_layout.addWidget(QLabel(f"Memória egységek: {active_memoriaszam + inactive_memoriaszam}/{specs['MEMORIASZAM']}, aktív: {active_memoriaszam}, inaktív: {inactive_memoriaszam}"))
+                specs_layout.addWidget(QLabel(error_text))
                 specs_layout.addStretch()
                 
                 computer_layout.addLayout(specs_layout)
@@ -757,15 +796,15 @@ class MainWindow(QMainWindow):
                     process_frame.setLineWidth(1)
                     
                     process_layout = QHBoxLayout()
-                    process_layout.addWidget(QLabel(f"{process['NEV']}"))
+                    process_layout.addWidget(QLabel(f"{process['NEV']}   "))
                     pro_edit_btn = QPushButton("Szerkesztés")
                     pro_edit_btn.clicked.connect(lambda _, pg=process['NEV'], idx=i: self.open_edit_process_page(pg, idx))
                     process_layout.addWidget(pro_edit_btn)
 
-                    process_layout.addWidget(QLabel(f"Kód: {process['KOD']}  |"))
-                    process_layout.addWidget(QLabel(f"Indítás: {process['INDITAS']}  |"))
-                    process_layout.addWidget(QLabel(f"Magszám: {process['MAGSZAM']}  |"))
-                    process_layout.addWidget(QLabel(f"Memória: {process['MEMORIASZAM']} MB  |"))
+                    process_layout.addWidget(QLabel(f"  ・  Kód: {process['KOD']}  ・"))
+                    process_layout.addWidget(QLabel(f"Indítás: {process['INDITAS']}  ・"))
+                    process_layout.addWidget(QLabel(f"Magszám: {process['MAGSZAM']}  ・"))
+                    process_layout.addWidget(QLabel(f"Memória: {process['MEMORIASZAM']} MB  ・"))
                     process_layout.addWidget(QLabel("Aktív" if process['AKTIV'] else "Inaktív"))
                     process_layout.addStretch()
                     

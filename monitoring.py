@@ -38,7 +38,7 @@ def monitoring(path:str):
     print("Futó folyamatok:\n") #én ezt a részt így értelmeztem ha ez nem jó akkor nem tudom hogy kéne értelmezni
     for folyamat in adat['Folyamatok']:
         
-        aktiv=0,inaktiv=0
+        aktiv=0;inaktiv=0
         futofolyamatok.append(folyamat)
         print("Futófolyamat neve: ",folyamat, "futó folyamat azpmosítója: ", folyamat['KOD'], "folyamat által használt memória: ",folyamat['MEMORIASZAM'],"folyamat által használt magok: ",folyamat['MAGSZAM'] )
         if(folyamat['AKTIV']==True):
